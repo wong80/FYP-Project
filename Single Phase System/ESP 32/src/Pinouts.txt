@@ -1,0 +1,17 @@
+# SD Card Pinout (SPI)
+SCK 18
+MISO 19
+MOSI 23
+CS 5
+
+# OLED & CLK Pinout (I2C)
+SDA 17 
+SCL 16
+
+UART Pins
+RX1 33
+TX1 32
+RX2 26
+TX2 25
+RX3 14
+TX3 12
