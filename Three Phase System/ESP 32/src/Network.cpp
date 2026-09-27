@@ -1,18 +1,7 @@
 #include "Network.h"
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
-#define ssid "eduroam"
-#define EAP_ANONYMOUS_IDENTITY "REDACTED" 
-#define EAP_IDENTITY "REDACTED" 
-#define EAP_PASSWORD "REDACTED" 
-#define EAP_USERNAME "REDACTED" 
-#define API_KEY "REDACTED"
-#define DATABASE_URL "https://fyp-powermonitoring-b2afc-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define USER_EMAIL "REDACTED"
-#define USER_PASSWORD "REDACTED"
-
-#define ssid_private "REDACTED"
-#define password_private "REDACTED"
+#include "secrets.h"
 
 static Network *instance = NULL;
 int firebase_id = 0;
