@@ -1,0 +1,6 @@
+
+AutoML_fold_*
+AutoML_v2_fold_*
+
+# Firmware credentials
+**/include/secrets.h
