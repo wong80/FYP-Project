@@ -4,3 +4,13 @@ AutoML_v2_fold_*
 
 # Firmware credentials
 **/include/secrets.h
+
+# Service deployment secrets
+.env
+deploy/firebase-service-account.json
+*.service-account.json
+
+# Python
+__pycache__/
+*.egg-info/
+.pytest_cache/

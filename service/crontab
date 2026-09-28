@@ -1,0 +1,11 @@
+# Runs inside the `scheduler` container via supercronic. Times are Malaysia time.
+CRON_TZ=Asia/Kuala_Lumpur
+
+# Pull ESP32 readings from Firebase (no-op until FIREBASE_DB_URL is set).
+5 * * * * chiller ingest-firebase
+
+# Forecast the coming hour.
+10 * * * * chiller score
+
+# Weekly retrain, Sunday 02:00. Skips itself when there isn't a week of new clean data (T4).
+0 2 * * 0 chiller train
