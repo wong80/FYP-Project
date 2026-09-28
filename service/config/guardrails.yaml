@@ -1,0 +1,16 @@
+# Data guardrail thresholds (DESIGN.md §4.1). Tunable without code changes.
+# Starting points were checked against Datasets/Combined.xlsx (Jan–Dec 2024).
+validation:
+  future_tolerance_minutes: 5          # D2
+  phase_voltage_v: [200, 270]          # D3
+  line_voltage_v: [350, 470]           # D3 (column may be missing on older rows)
+  current_a: [0, 2000]                 # D3
+  active_power_total_kw: [0, 1000]     # D3
+  phase_sum_tolerance_kw: 2.0          # D4
+  apparent_power_slack: 1.05           # D5: P <= V*I/1000 * slack
+  energy_rate_rel_tolerance: 1.0       # D6 soft: |dE - mean(P)| <= tol*mean(P) + abs
+  energy_rate_abs_tolerance_kwh: 5.0   # D6 soft
+  stuck_run_hours: 6                   # D7
+  spike_robust_z: 6.0                  # D8 soft
+  spike_min_samples: 4                 # D8: min samples per hour-of-week bucket
+  min_completeness: 0.90               # D10
