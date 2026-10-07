@@ -13,6 +13,10 @@ on:
         required: false
         type: string
         default: ""
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN:
+        description: "Token with Dependabot alerts: read (GITHUB_TOKEN can't read alerts)"
+        required: false
   workflow_dispatch:
     inputs:
       severity-filter:
@@ -49,6 +53,9 @@ jobs:
           SEVERITY_FILTER: ${{ inputs.severity-filter || 'critical,high' }}
           EXTRA_LABELS: ${{ inputs.extra-labels }}
         with:
+          # GITHUB_TOKEN has no Dependabot-alerts permission (security-events covers code scanning only),
+          # so listing alerts needs a fine-grained PAT or GitHub App token with "Dependabot alerts: read".
+          github-token: ${{ secrets.DEPENDABOT_ALERTS_TOKEN || github.token }}
           script: |
             const filter = process.env.SEVERITY_FILTER.toLowerCase().split(',').map(s => s.trim());
             const extraLabels = (process.env.EXTRA_LABELS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -62,9 +69,15 @@ jobs:
                 per_page: 100
               });
             } catch (e) {
-              if (e.status === 403 || e.message.includes('disabled')) {
+              // Only a 403 that says so means alerts are off; any other 403 is the token lacking access.
+              if (e.status === 403 && /disabled/i.test(e.message)) {
                 core.warning(`Dependabot alerts are not enabled for this repository. Enable them in Settings → Code security → Dependabot alerts.`);
                 core.setOutput('count', '0');
+                return;
+              }
+              if (e.status === 403 || e.status === 401) {
+                core.setFailed(`Can't read Dependabot alerts (${e.status}: ${e.message}). The token needs "Dependabot alerts: read" — ` +
+                  `add a fine-grained PAT as the DEPENDABOT_ALERTS_TOKEN repository secret.`);
                 return;
               }
               throw e;
