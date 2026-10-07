@@ -52,6 +52,7 @@ jobs:
           # Inputs go through env, not ${{ }} inside the script, so their text can't break or inject into the JS.
           SEVERITY_FILTER: ${{ inputs.severity-filter || 'critical,high' }}
           EXTRA_LABELS: ${{ inputs.extra-labels }}
+          HAS_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN != '' && 'true' || '' }}
         with:
           # GITHUB_TOKEN has no Dependabot-alerts permission (security-events covers code scanning only),
           # so listing alerts needs a fine-grained PAT or GitHub App token with "Dependabot alerts: read".
@@ -76,8 +77,13 @@ jobs:
                 return;
               }
               if (e.status === 403 || e.status === 401) {
-                core.setFailed(`Can't read Dependabot alerts (${e.status}: ${e.message}). The token needs "Dependabot alerts: read" — ` +
-                  `add a fine-grained PAT as the DEPENDABOT_ALERTS_TOKEN repository secret.`);
+                // GitHub names the permission it wanted in this header, e.g. "vulnerability_alerts=read".
+                const accepted = e.response?.headers?.['x-accepted-github-permissions'] || 'not reported';
+                const usingPat = Boolean(process.env.HAS_ALERTS_TOKEN);
+                core.setFailed(`Can't read Dependabot alerts (${e.status}: ${e.message}). GitHub accepts: ${accepted}. ` +
+                  (usingPat
+                    ? `DEPENDABOT_ALERTS_TOKEN is set but lacks access: give the fine-grained PAT this repository and "Dependabot alerts: Read-only".`
+                    : `Add a fine-grained PAT with "Dependabot alerts: Read-only" as the DEPENDABOT_ALERTS_TOKEN repository secret.`));
                 return;
               }
               throw e;
