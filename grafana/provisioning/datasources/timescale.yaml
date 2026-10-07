@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: TimescaleDB
+    uid: timescale
+    type: grafana-postgresql-datasource
+    url: db:5432
+    user: grafana_reader          # read-only role (deploy/db-init/10-roles.sh)
+    isDefault: true
+    jsonData:
+      database: chiller
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: true
+    secureJsonData:
+      password: $GRAFANA_DB_PASSWORD

@@ -1,0 +1,47 @@
+# Guardrail thresholds (DESIGN.md §4). Tunable without code changes.
+# Starting points were checked against Datasets/Combined.xlsx (Jan–Dec 2024).
+
+validation:                            # §4.1 data guardrails
+  future_tolerance_minutes: 5          # D2
+  phase_voltage_v: [200, 270]          # D3
+  line_voltage_v: [350, 470]           # D3 (not measured by every source)
+  current_a: [0, 2000]                 # D3
+  active_power_total_kw: [0, 1000]     # D3
+  phase_sum_tolerance_kw: 2.0          # D4
+  apparent_power_slack: 1.05           # D5: P <= V*I/1000 * slack
+  energy_rate_rel_tolerance: 1.0       # D6 soft: |dE - mean(P)| <= tol*mean(P) + abs
+  energy_rate_abs_tolerance_kwh: 5.0   # D6 soft
+  stuck_run_hours: 6                   # D7
+  spike_robust_z: 6.0                  # D8 soft
+  spike_min_samples: 4                 # D8: min samples per hour-of-week bucket
+  min_completeness: 0.90               # D10
+
+training:                              # §4.2 training guardrails
+  source: building_meter               # which readings.source the model learns from
+  holdout_hours: 336                   # newest 14 days, never trained on
+  cv_folds: 5                          # T1: time-ordered folds inside the training part
+  cv_fold_hours: 336
+  max_history_days: 730                # T5
+  min_new_hours: 168                   # T4
+  time_limit_s: 600                    # T6
+  algorithms: [LightGBM, Xgboost, CatBoost, Random Forest, Extra Trees]
+  mode: Compete
+  random_state: 42
+  auto_promote_first_model: true       # nothing to compare against yet
+  auto_promote: false                  # later models wait for `promote` (human approval)
+
+gates:                                 # §4.3 promotion gates
+  min_improvement: 0.02                # G1
+  max_vs_naive: 0.8                    # G2
+  min_r2: 0.80                         # G3
+  max_segment_regression: 1.10         # G4
+  max_abs_bias_kw: 10.0                # G5
+  max_pred_vs_hist_max: 1.2            # G6
+
+scoring:
+  stale_after_hours: 2                 # M4: fall back to seasonal-naive when data is older
+  history_hours: 400
+
+firebase:
+  min_samples_per_hour: 30             # ESP32 posts ~once a minute
+  power_unit_divisor: 1000.0           # PZEM power is in W; stored in kW
